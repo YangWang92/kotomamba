@@ -303,7 +303,7 @@ class PILEDataset(Dataset):
         )
 
         # encoded_text.append(self.tokenizer.eos_token_id)  # TODO: check if we don't need this.
-        encoded_text = encoded_text.astype(np.int16)
+        encoded_text = encoded_text.astype(np.int32) #np.int16 overflows and results in a bad behaivor
         encoded_text_tensor = torch.tensor(encoded_text)
         padding_size: int = self.max_words - encoded_text_tensor.size(0)
         if padding_size > 0:
@@ -317,7 +317,9 @@ class PILEDataset(Dataset):
         labels: torch.Tensor = torch.cat((encoded_text_tensor[1:], torch.tensor([IGNORE_INDEX])))
 
         attention_mask: torch.Tensor = torch.ones(self.max_words, dtype=torch.long)
-        attention_mask[encoded_text_tensor == 0] = 0
+        if padding_size > 0:
+            attention_mask[-padding_size::] = 0
+        # attention_mask[encoded_text_tensor == 0] = 0 # this code will also mask out EOS tokens
 
         return {
             "input_ids": input_ids,
@@ -326,14 +328,15 @@ class PILEDataset(Dataset):
         }
 
 if __name__ == "__main__":
-
     dataset_config = DataConfig(
         "/home/acf15317dw/kotoba-tech/kotobamba/3rdparty/Megatron-LM/pile-mamba-debug_text_document.bin",
         4096,
     )    
     tokenizer = AutoTokenizer.from_pretrained(
         "EleutherAI/gpt-neox-20b", use_fast=True)
-
     dataset = PILEDataset(dataset_config, tokenizer)
-    dataset.__getitem__(1)
+    embed()
+    for i in range(len(dataset)):
+        output = dataset.__getitem__(i)
+        print(tokenizer.decode(output["input_ids"]))
     
