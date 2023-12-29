@@ -111,7 +111,7 @@ def test_validation_batch(dataset, ds_index = 0):
 if __name__ == "__main__":
     # Configuration for the dataset
     context_size = 4096
-    data_path = "/home/acf15317dw/kotoba-tech/kotobamba/3rdparty/Megatron-LM/pile-mamba-debug_text_document.bin"
+    data_path = "/groups/gcd50698/fujii/datasets/pile/bin/pile-mamba-validation_text_document.bin"
     dataset_config = DataConfig(data_path, data_path, context_size)
 
     # Initialize the tokenizer
